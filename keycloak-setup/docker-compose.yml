@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.3
+    container_name: todofy-keycloak
+    ports:
+      - "8080:8080"
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_CACHE_THEMES: false 
+    volumes:
+      - ./data:/opt/keycloak/data
+      - ./themes:/opt/keycloak/themes
