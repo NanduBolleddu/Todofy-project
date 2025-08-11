@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # This service runs the PostgreSQL database for Keycloak's data persistence.
+  postgres:
+    image: postgres:15
+    container_name: todofy
+    restart: always
+    ports:
+      # Use a specific port to avoid conflicts with other local databases
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: todofy
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      # This volume persists your database data
+      - pgdata:/var/lib/postgresql/data
+
+  # This service runs Keycloak and configures it to use the 'postgres' service as its database.
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.3
+    container_name: todofy-keycloak
+    ports:
+      - "8080:8080"
+    command: start-dev
+    environment:
+      # Admin credentials for the Keycloak console
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+
+      # Database Configuration
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/todofy
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+
+      # Caching for themes (for development purposes)
+      KC_CACHE_THEMES: false
+    volumes:
+      # This volume persists Keycloak's own data
+      - keycloak-data:/opt/keycloak/data
+      # This volume maps your local themes to the Keycloak container
+      - ./themes:/opt/keycloak/themes
+    depends_on:
+      # Ensures that PostgreSQL starts before Keycloak
+      - postgres
+
+# Define the named volumes to persist your data
+volumes:
+  pgdata:
+  keycloak-data:
